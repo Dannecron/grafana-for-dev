@@ -1,0 +1,50 @@
+---
+version: "3.9"
+
+services:
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION:-latest}
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.docker.localhost`)"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    expose:
+      - 3000
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana-storage:/var/lib/grafana
+    profiles:
+      - grafana
+
+  loki:
+    image: grafana/loki:${LOKI_STACK_VERSION:-2.6.0}
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.loki.rule=Host(`loki.docker.localhost`)"
+      - "traefik.http.services.loki.loadbalancer.server.port=3100"
+    expose:
+      - 3100
+    volumes:
+      - ./loki:/loki/config
+    command: --config.file=/loki/config/config.yml
+    profiles:
+      - grafana
+  
+  promtail:
+    image: grafana/promtail:${LOKI_STACK_VERSION:-2.6.0}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`promtail.docker.localhost`)"
+      - "traefik.http.services.grafana.loadbalancer.server.port=9080"
+    expose:
+      - 9080
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./promtail:/opt/promtail
+    command: -config.file=/opt/promtail/config.yml
+    profiles:
+      - promtail
+
+volumes:
+  grafana-storage:
