@@ -15,7 +15,7 @@
 	services:
 	  my-service:
 	    labels:
-		  - "loki.log=true"
+	      - "loki.log=true"
 	```
 
 2. Запустить весь стек `docker-compose`
