@@ -4,9 +4,9 @@ version: "3.9"
 services:
   grafana:
     image: grafana/grafana:${GRAFANA_VERSION:-latest}
-    labels: 
+    labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.docker.localhost`)"
+      - "traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}`)"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     expose:
       - 3000
@@ -17,10 +17,10 @@ services:
       - grafana
 
   loki:
-    image: grafana/loki:${LOKI_STACK_VERSION:-2.6.0}
-    labels: 
+    image: grafana/loki:${LOKI_STACK_VERSION}
+    labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.loki.rule=Host(`loki.docker.localhost`)"
+      - "traefik.http.routers.loki.rule=Host(`${LOKI_HOST}`)"
       - "traefik.http.services.loki.loadbalancer.server.port=3100"
     expose:
       - 3100
@@ -29,12 +29,12 @@ services:
     command: --config.file=/loki/config/config.yml
     profiles:
       - grafana
-  
+
   promtail:
-    image: grafana/promtail:${LOKI_STACK_VERSION:-2.6.0}
+    image: grafana/promtail:${LOKI_STACK_VERSION}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`promtail.docker.localhost`)"
+      - "traefik.http.routers.grafana.rule=Host(`${LOKI_PROMTAIL_HOST}`)"
       - "traefik.http.services.grafana.loadbalancer.server.port=9080"
     expose:
       - 9080
@@ -46,5 +46,43 @@ services:
     profiles:
       - promtail
 
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`${PROMETHEUS_HOST}`)"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-10d}'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    expose:
+      - 9090
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus-data:/prometheus
+    profiles:
+      - prometheus
+
+  node-exporter:
+    image: prom/node-exporter:${PROMETHEUS_NODE_EXPORTER_VERSION}
+    restart: on-failure
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    expose:
+      - 9100
+    profiles:
+      - prometheus
+
 volumes:
   grafana-storage:
+  prometheus-data:
