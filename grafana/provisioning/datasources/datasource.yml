@@ -14,3 +14,9 @@ datasources:
     jsonData:
       maxLines: 1000
     editable: true
+  - name: Prometheus
+    type: prometheus
+    orgId: 1
+    url: http://prometheus:9090
+    editable: true
+    version: 1
