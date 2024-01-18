@@ -29,6 +29,26 @@ services:
     command: --config.file=/loki/config/config.yml
     profiles:
       - grafana
+  
+  tempo:
+    image: grafana/tempo:${TEMPO_VERSION}
+    command: 
+      - "-config.file=${TEMPO_CONFIG_FILE:-/etc/tempo/tempo.yml}"
+      - "-config.expand-env=true"
+    expose:
+      - 3200 # tempo
+      - 9095 # tempo grpc
+      - 4317 # otlp grpc
+      - 4318 # otlp http
+    environment:
+      TEMPO_SERVER_LOG_LEVEL: ${TEMPO_SERVER_LOG_LEVEL:-info}
+      TEMPO_STORAGE_PATH: ${TEMPO_STORAGE_PATH:-/opt/tempo}
+      TEMPO_PROMETHEUS_URL: ${TEMPO_PROMETHEUS_URL}
+    volumes:
+      - ./tempo:/etc/tempo
+      - tempo-local-storage:${TEMPO_STORAGE_PATH:-/opt/tempo}
+    profiles:
+      - tempo
 
   promtail:
     image: grafana/promtail:${LOKI_STACK_VERSION}
@@ -85,4 +105,5 @@ services:
 
 volumes:
   grafana-storage:
+  tempo-local-storage:
   prometheus-data:

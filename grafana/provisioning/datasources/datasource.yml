@@ -20,3 +20,9 @@ datasources:
     url: http://prometheus:9090
     editable: true
     version: 1
+  - name: Tempo
+    type: tempo
+    orgId: 1
+    access: proxy
+    url: http://tempo:3200
+    editable: true
