@@ -35,7 +35,7 @@ datasources:
         customQuery: true
         filtersBySpanID: false
         filtersByTraceID: false
-        query: "{job=\"docker\"} |= \"${__trace.traceId}\" |= \"${__span.spanId}\""
+        query: "{job=\"docker\"} |= \"$${__trace.traceId}\" |= \"$${__span.spanId}\""
         spanEndTimeShift: "30m"
         spanStartTimeShift: "-30m"
         tags: []
