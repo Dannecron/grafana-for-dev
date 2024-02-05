@@ -8,6 +8,7 @@ deleteDatasources:
 datasources:
   - name: Loki
     type: loki
+    uid: loki-local
     orgId: 1
     access: proxy
     url: http://loki:3100
@@ -16,13 +17,27 @@ datasources:
     editable: true
   - name: Prometheus
     type: prometheus
+    uid: prometheus-local
     orgId: 1
     url: http://prometheus:9090
     editable: true
     version: 1
   - name: Tempo
     type: tempo
+    uid: tempo-local
     orgId: 1
     access: proxy
     url: http://tempo:3200
     editable: true
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: "loki-local"
+        customQuery: true
+        filtersBySpanID: false
+        filtersByTraceID: false
+        query: "{job=\"docker\"} |= \"${__trace.traceId}\" |= \"${__span.spanId}\""
+        spanEndTimeShift: "30m"
+        spanStartTimeShift: "-30m"
+        tags: []
+      lokiSearch:
+        datasourceUid: "loki-local"

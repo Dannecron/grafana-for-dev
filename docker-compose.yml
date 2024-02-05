@@ -29,10 +29,26 @@ services:
     command: --config.file=/loki/config/config.yml
     profiles:
       - grafana
-  
+
+  agent:
+    image: grafana/agent:${AGENT_VERSION}
+    environment:
+      WAL_DATA_DIRECTORY: /opt/agent/data
+      CONFIG_FILE_PATH: /etc/agent/agent.yaml
+      AGENT_LOKI_URL: "${AGENT_LOKI_URL}"
+      AGENT_TEMPO_URL: "${AGENT_TEMPO_URL}"
+    volumes:
+      - ./agent:/etc/agent/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "-config.file=/etc/agent/agent.yaml"
+      - "-config.expand-env"
+    profiles:
+      - agent
+
   tempo:
     image: grafana/tempo:${TEMPO_VERSION}
-    command: 
+    command:
       - "-config.file=${TEMPO_CONFIG_FILE:-/etc/tempo/tempo.yml}"
       - "-config.expand-env=true"
     expose:
@@ -49,22 +65,6 @@ services:
       - tempo-local-storage:${TEMPO_STORAGE_PATH:-/opt/tempo}
     profiles:
       - tempo
-
-  promtail:
-    image: grafana/promtail:${LOKI_STACK_VERSION}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`${LOKI_PROMTAIL_HOST}`)"
-      - "traefik.http.services.grafana.loadbalancer.server.port=9080"
-    expose:
-      - 9080
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./promtail:/opt/promtail
-    command: -config.file=/opt/promtail/config.yml
-    profiles:
-      - promtail
 
   prometheus:
     image: prom/prometheus:${PROMETHEUS_VERSION}

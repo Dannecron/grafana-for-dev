@@ -6,23 +6,14 @@
 
 1. Скопировать [.env.example](/.env.example) в `.env`
 
-#### With promtail
+#### With grafana agent
 
-1. Добавить новый лейбл к контейнеру, чьи логи необходимо отсылать в loki
+1. Добавить в `COMPOSE_PROFILES` значение `agent` в файле [.env](/.env)
+2. Запустить docker-compose-стэк:
+  ```shell
+  docker compose up -d
+  ```
 
-	Например, достаточно просто добавить новый лейбл в `docker-compose`-файл искомого стека:
-	```yaml
-	services:
-	  my-service:
-	    labels:
-	      - "loki.log=true"
-	```
-
-2. Запустить весь стек `docker-compose`
-
-	```shell
-	docker compose up -d
-	```
 
 #### With docker plugin
 
@@ -57,7 +48,7 @@
 	  	<<: *loki-log-config
 	```
 
-3. Убрать профиль `promtail` из значения `COMPOSE_PROFILES` в файле [.env](/.env)
+3. Убрать профиль `agent` из значения `COMPOSE_PROFILES` в файле [.env](/.env)
 4. Запустить стек `grafana` + `loki`
 
 	```shell
