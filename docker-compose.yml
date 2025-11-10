@@ -28,21 +28,23 @@ services:
     profiles:
       - grafana
 
-  agent:
-    image: grafana/agent:${AGENT_VERSION}
-    environment:
-      WAL_DATA_DIRECTORY: /opt/agent/data
-      CONFIG_FILE_PATH: /etc/agent/agent.yaml
-      AGENT_LOKI_URL: "${AGENT_LOKI_URL}"
-      AGENT_TEMPO_URL: "${AGENT_TEMPO_URL}"
+  alloy:
+    image: grafana/alloy:${ALLOY_VERSION}
     volumes:
-      - ./agent:/etc/agent/
+      - ./alloy/alloy.conf:/etc/alloy/config.alloy
+      - alloy-data:/var/lib/alloy/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
-      - "-config.file=/etc/agent/agent.yaml"
-      - "-config.expand-env"
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+    expose:
+      - 12345
+      - 4317 # otlp grpc
+      - 4318 # otlp http
     profiles:
-      - agent
+      - alloy
 
   tempo:
     image: grafana/tempo:${TEMPO_VERSION}
@@ -60,7 +62,7 @@ services:
       TEMPO_PROMETHEUS_URL: ${TEMPO_PROMETHEUS_URL}
     volumes:
       - ./tempo:/etc/tempo
-      - tempo-local-storage:${TEMPO_STORAGE_PATH:-/opt/tempo}
+      - tempo-local-storage:${TEMPO_STORAGE_PATH:-/var/tempo}
     profiles:
       - tempo
 
@@ -105,3 +107,4 @@ volumes:
   grafana-storage:
   tempo-local-storage:
   prometheus-data:
+  alloy-data:

@@ -6,9 +6,9 @@
 
 1. Скопировать [.env.example](/.env.example) в `.env`
 
-#### With grafana agent
+#### With grafana alloy
 
-1. Добавить в `COMPOSE_PROFILES` значение `agent` в файле [.env](/.env)
+1. Добавить в `COMPOSE_PROFILES` значение `alloy` в файле [.env](/.env)
 2. Запустить docker-compose-стэк:
   ```shell
   docker compose up -d
@@ -18,7 +18,7 @@
 #### With docker plugin
 
 1. Установить [лог-драйвер grafana loki для docker](https://grafana.com/docs/loki/latest/clients/docker-driver/)
-   
+
     ```shell
     docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
     ```
@@ -48,7 +48,7 @@
 	  	<<: *loki-log-config
 	```
 
-3. Убрать профиль `agent` из значения `COMPOSE_PROFILES` в файле [.env](/.env)
+3. Убрать профиль `alloy` из значения `COMPOSE_PROFILES` в файле [.env](/.env)
 4. Запустить стек `grafana` + `loki`
 
 	```shell

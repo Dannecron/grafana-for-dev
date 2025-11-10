@@ -18,11 +18,13 @@ query_frontend:
 #
 # for a production deployment you should only enable the receivers you need!
 distributor:
-  receivers:                           
+  receivers:
     otlp:
       protocols:
         http:
+          endpoint: "0.0.0.0:4318"
         grpc:
+          endpoint: "0.0.0.0:4317"
 
 ingester:
   max_block_duration: 5m # cut the headblock when this much time passes. this is being set for demo purposes and should probably be left alone normally
